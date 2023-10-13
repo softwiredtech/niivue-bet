@@ -1,0 +1,18 @@
+{
+    "name": "niivue-bet",
+    "private": true,
+    "version": "0.0.0",
+    "scripts": {
+      "dev": "source ./fetch_bet.sh && vite",
+      "build": "source ./fetch_bet.sh && vite build",
+      "preview": "source ./fetch_bet.sh && vite preview",
+      "deploy": "npm run build && cp *.gz dist"
+    },
+    "devDependencies": {
+      "gh-pages": "^3.2.3",
+      "vite": "^2.9.0"
+    },
+    "dependencies": {
+      "@niivue/niivue": "^0.22.2"
+    }
+  }

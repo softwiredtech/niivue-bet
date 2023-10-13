@@ -1,0 +1,4 @@
+.DS_Store
+node_modules
+bet2.js
+*.wasm

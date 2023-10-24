@@ -1,13 +1,164 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="./favicon.ico" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* General Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Slightly darker background overlay */
+            z-index: 1000;
+            font-family: 'Arial', sans-serif; /* You can choose another font if desired */
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 30px;
+            background-color: #fff;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0, 0, 0, 0.23);
+            border-radius: 10px;
+            transition: transform 0.3s; /* Adds a zoom effect on modal open/close */
+        }
+
+        /* Label & Input Styles */
+        .modal-content label {
+            display: block;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .modal-content input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s; /* Adds a smooth transition effect */
+        }
+
+        .modal-content input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        /* Button Styles */
+        .modal-content button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #333;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s; /* Adds a smooth hover effect */
+            margin-right: 10px; /* Spacing between buttons */
+        }
+
+        .modal-content button:hover {
+            background-color: #555;
+        }
+
+        /* Reset default padding and margins */
+        body, h1, h2, h3, p, ul, li {
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Navbar styles */
+        .navbar {
+            display: flex;
+            align-items: center;
+            background-color: #0f0f0f;  /* Black */
+            padding: 1em;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .navbar .title {
+            font-size: 1.5em;
+            color: white;  /* White for contrast against black */
+            font-weight: 500;
+            margin-right: 2em;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 1em;
+        }
+
+        .navbar ul li {
+            display: inline-block;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);  /* Slight white transparency for differentiation */
+            color: white;  /* White for visibility against black */
+            transition: background-color 0.3s;
+        }
+
+        .navbar ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);  /* Slightly increased white transparency on hover */
+        }
+    </style>
 </head>
 
 <body>
-    <canvas id="gl" height=480 width=640 ></canvas>
+    <!-- BET Modal -->
+    <div id="betModal" class="modal">
+        <div class="modal-content">
+            <h2>BET Options</h2>
+            <form id="betForm">
+                <label for="-f">Fractional intensity threshold:</label>
+                <input type="range" name="-f" min="0" max="1" value="0.5" step="0.1" style="width: 100%;">
+                <span id="sliderValueF">0.5</span>
+                <label>
+                    <input type="checkbox" name="-o"> Brain outline mask
+                </label>
+                <label>
+                    <input type="checkbox" name="-m"> Generate brain mask
+                </label>
+                <label>
+                    <input type="checkbox" name="-s"> Generate approximate skull image
+                </label>
+                <label>
+                    <input type="checkbox" name="-n"> Don't generate segmented brain image output
+                </label>
+                <label for="-g">Vertical gradient in fractional intensity threshold:</label>
+                <input type="range" name="-g" min="-1" max="1" step="0.1" style="width: 100%;">
+                <span id="sliderValueG">0.0</span>
+            </form>
+            <button id="submitBet">Submit</button>
+            <button id="closeModal">Close</button>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" style="display: none;" />
+    <!-- Navbar section -->
+    <div class="navbar">
+        <div class="title">NiiVue BET</div>
+        <ul>
+            <li><a id="fileSelection" href="#">File Selection</a></li>
+            <li><a id="bet" href="#">Options</a></li>
+        </ul>
+    </div>
+
+    <canvas id="gl" height="480" width="640"></canvas>
 
     <script type="module" src="./main.js"></script>
 </body>

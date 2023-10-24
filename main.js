@@ -1,53 +1,103 @@
 import { Niivue, NVImage } from '@niivue/niivue'
 import BetWorker from "./worker?worker";
 
+
+let inputVolumeBuffer = null
+
 function processImage(worker, file) {
-  worker.postMessage({files: [{name: "test.nii", data: new Uint8Array(file)}], args: ["test.nii", "out/test_betted.nii", "-f" ,"0.5", "-o", "-g" ,"0"]});
+    let args = ["vol.nii", "out/vol_bet.nii"].concat(getCLIArgumentsFromModal());
+    console.log(args);
+  worker.postMessage({files: [{name: "vol.nii", data: new Uint8Array(file)}], args: args});
 }
 
 function initBetWorker(nv, worker) {
     worker.addEventListener("message", async function(e) {
-        nv.setVolume(new NVImage(e.data[0].data), nv.volumes.length);								
-	    worker.terminate();
+        let vol = new NVImage(e.data[0].data);
+        nv.setVolume(vol, 0);
+        //worker.terminate();
     });
 	
 	worker.addEventListener("onerror", function(error) {
       console.log(error.message);
-	  worker.terminate();
+      //worker.terminate();
 	});
 }
 
- async function fetchFile(url) {
-    try {
-        const response = await fetch(url);
+async function handleFileSelection(event, nv) {
+    const file = event.target.files[0];
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const buffer = await response.arrayBuffer();
-        
-        return buffer;
-    } catch (error) {
-        console.error('Fetching file failed:', error);
-        throw error;
+    if (file) {
+        let volume = await NVImage.loadFromFile(file);
+        nv.addVolume(volume);
+        const reader = new FileReader();
+        reader.onload = function(fileEvent) {
+            inputVolumeBuffer = fileEvent.target.result;
+        };
+        reader.readAsArrayBuffer(file);
     }
 }
 
+function getCLIArgumentsFromModal() {
+    const form = document.getElementById('betForm');
+    const inputs = form.querySelectorAll('input');
+    const params = [];
+
+    for(let input of inputs) {
+        // If it's a checkbox and it's checked, push its name
+        if (input.type === 'checkbox' && input.checked) {
+            params.push(input.name);
+        } else if (input.type === 'range' || input.type === 'number') {
+            params.push(input.name);
+            params.push(input.value);
+        }
+    }
+
+    return params;
+}
+
  window.onload = async () => {
-    const worker = new BetWorker();
+    console.log(getCLIArgumentsFromModal());
     const canvas = document.getElementById('gl');
+    const worker = new BetWorker();
     const nv = new Niivue();
+
+    document.getElementById("fileSelection").addEventListener("click", (e) => {
+        e.preventDefault();
+        fileInput.click();
+    });
+
+    document.getElementById("submitBet").addEventListener("click", (e) => {
+        e.preventDefault();
+        processImage(worker, inputVolumeBuffer);
+        modal.style.display = 'none';
+    });
+
+    fileInput.addEventListener("change", (event) => handleFileSelection(event, nv));
+
+    // Modal init
+    const modal = document.getElementById('betModal');
+    const closeModalButton = document.getElementById('closeModal');
+    
+    // Show the modal when BET is clicked
+    document.getElementById("bet").addEventListener("click", function(e) {
+        e.preventDefault();
+        modal.style.display = 'block';
+    });
+
+    // Close the modal
+    closeModalButton.addEventListener("click", function() {
+        modal.style.display = 'none';
+    });
+
+    document.querySelector('input[name="-f"]').addEventListener('input', function(e) {
+        document.getElementById('sliderValueF').textContent = e.target.value;
+    });
+    
+    document.querySelector('input[name="-g"]').addEventListener('input', function(e) {
+        document.getElementById('sliderValueG').textContent = e.target.value;
+    });
+
     initBetWorker(nv, worker);
-    const testInputNii = await fetchFile("./test_t1.nii");
     nv.attachToCanvas(canvas);
-    nv.loadVolumes([{
-        url: "./test_t1.nii",
-        volume: {hdr: null, img: null},
-        name: "test_image",
-        colorMap: "gray",
-        opacity: 1,
-        visible: true,
-    }]);
-    processImage(worker, testInputNii);
+    
 }

@@ -7,6 +7,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
+        /* Style for the links container */
+        .link-container {
+            position: absolute;
+            top: 10%;  /* Moved closer to the navbar */
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            padding-left: 10px;
+            font-family: 'Roboto', sans-serif; /* Updated font to match the site */
+        }
+
+        /* Style for the individual links */
+        .overlay-link {
+            text-decoration: none;
+            background-color: #fff;
+            padding: 0.5em 1em;
+            border-radius: 4px;
+            color: #0f0f0f;
+            transition: background-color 0.3s, color 0.3s;
+            text-align: center;  /* Centered the link text */
+        }
+
+        .overlay-link:hover {
+            background-color: #383838;
+            color: #fff;
+        }
+
+        .overlay-link.selected {
+            background-color: #383838;
+            color: #fff;
+        }
+
         /* General Modal Styles */
         .modal {
             display: none;
@@ -115,6 +148,10 @@
         .navbar ul li a:hover {
             background-color: rgba(255, 255, 255, 0.2);  /* Slightly increased white transparency on hover */
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -143,7 +180,7 @@
                 <input type="range" name="-g" min="-1" max="1" step="0.1" style="width: 100%;">
                 <span id="sliderValueG">0.0</span>
             </form>
-            <button id="submitBet">Submit</button>
+            <button id="submitBet">Run</button>
             <button id="closeModal">Close</button>
         </div>
     </div>
@@ -156,6 +193,13 @@
             <li><a id="fileSelection" href="#">File Selection</a></li>
             <li><a id="bet" href="#">Options</a></li>
         </ul>
+    </div>
+
+    <div class="link-container">
+        <a id="betLink" href="#" class="overlay-link hidden">bet</a>
+        <a id="maskLink" href="#" class="overlay-link hidden">mask</a>
+        <a id="skullLink" href="#" class="overlay-link hidden">skull</a>
+        <a id="overlayLink" href="#" class="overlay-link hidden">overlay</a>
     </div>
 
     <canvas id="gl" height="480" width="640"></canvas>

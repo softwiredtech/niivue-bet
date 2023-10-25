@@ -3,6 +3,12 @@ import BetWorker from "./worker?worker";
 
 
 let inputVolumeBuffer = null
+let outputVolumeBuffers = {
+    "bet": null,
+    "mask": null,
+    "overlay": null,
+    "skull": null
+}
 
 function processImage(worker, file) {
     let args = ["vol.nii", "out/vol_bet.nii"].concat(getCLIArgumentsFromModal());
@@ -10,16 +16,54 @@ function processImage(worker, file) {
   worker.postMessage({files: [{name: "vol.nii", data: new Uint8Array(file)}], args: args});
 }
 
+function setVolume(nv, buffer) {
+    let vol = new NVImage(buffer);
+    nv.setVolume(vol, 0);
+}
+
+function hideOutputSelectionLinks() {
+    let links = document.querySelectorAll('.overlay-link');
+
+    links.forEach(link => {
+        link.classList.add("hidden");
+    });
+}
+
+function showLink(linkId) {
+    document.getElementById(linkId).classList.remove("hidden");
+}
+
 function initBetWorker(nv, worker) {
     worker.addEventListener("message", async function(e) {
-        let vol = new NVImage(e.data[0].data);
-        nv.setVolume(vol, 0);
-        //worker.terminate();
+        if (e.data.length == 1) {
+            setVolume(nv, e.data[0].data);
+            hideOutputSelectionLinks();
+            showLink("betLink");
+        } else {
+            hideOutputSelectionLinks();
+
+            for (let result of e.data) {
+                if (result.name.includes("skull")) {
+                    outputVolumeBuffers["skull"] = result.data;
+                    showLink("skullLink")
+                } else if (result.name.includes("mask")) {
+                    outputVolumeBuffers["mask"] = result.data;
+                    showLink("maskLink")
+                } else if (result.name.includes("overlay")) {
+                    outputVolumeBuffers["overlay"] = result.data;
+                    showLink("overlayLink")
+                } else {
+                    outputVolumeBuffers["bet"] = result.data;
+                    showLink("betLink")
+                }
+            }
+
+            setVolume(nv, outputVolumeBuffers["bet"]);
+        }
     });
 	
 	worker.addEventListener("onerror", function(error) {
       console.log(error.message);
-      //worker.terminate();
 	});
 }
 
@@ -28,7 +72,7 @@ async function handleFileSelection(event, nv) {
 
     if (file) {
         let volume = await NVImage.loadFromFile(file);
-        nv.addVolume(volume);
+        nv.setVolume(volume, 0);
         const reader = new FileReader();
         reader.onload = function(fileEvent) {
             inputVolumeBuffer = fileEvent.target.result;
@@ -53,6 +97,23 @@ function getCLIArgumentsFromModal() {
     }
 
     return params;
+}
+
+async function fetchFile(url) {
+    try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const buffer = await response.arrayBuffer();
+        
+        return buffer;
+    } catch (error) {
+        console.error('Fetching file failed:', error);
+        throw error;
+    }
 }
 
  window.onload = async () => {
@@ -97,7 +158,40 @@ function getCLIArgumentsFromModal() {
         document.getElementById('sliderValueG').textContent = e.target.value;
     });
 
+    // BET output links
+    let links = document.querySelectorAll('.overlay-link');
+
+    links.forEach(link => {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            links.forEach(innerLink => {
+                innerLink.classList.remove('selected');
+            });
+
+            if (link.id.includes("skull")) {
+                setVolume(nv, outputVolumeBuffers["skull"]);
+            } else if (link.id.includes("overlay"))  {
+                setVolume(nv, outputVolumeBuffers["overlay"]);
+            } else if (link.id.includes("mask"))  {
+                setVolume(nv, outputVolumeBuffers["mask"]);
+            } else {
+                setVolume(nv, outputVolumeBuffers["bet"]);
+            }
+
+            this.classList.add('selected');
+        });
+    });
+
     initBetWorker(nv, worker);
+    inputVolumeBuffer = await fetchFile("./test_t1.nii");
     nv.attachToCanvas(canvas);
-    
+    nv.loadVolumes([{
+        url: "./test_t1.nii",
+        volume: {hdr: null, img: null},
+        name: "test_image",
+        colorMap: "gray",
+        opacity: 1,
+        visible: true,
+    }]);
 }

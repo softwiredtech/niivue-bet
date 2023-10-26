@@ -11,6 +11,8 @@ self.addEventListener("message", function(event) {
 	  arguments: event.data.args,
 	  
 	  outputDirectory: "out",
+
+	  wasmPath: event.data.wasmPath,
 	  
 	  TOTAL_MEMORY: 956301312
   };

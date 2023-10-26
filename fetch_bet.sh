@@ -5,6 +5,6 @@ bet2_wasm_url="https://github.com/wpmed92/WebMRI/raw/master/src/app/src/brainbro
 
 curl -L -o bet2.js $bet2_js_url
 curl -L -o bet2.wasm $bet2_wasm_url
-sed -i '' '1s/^/export /' bet2.js
+sed -i '' -e '1s/^/export /' -e 's/=\"bet2\.wasm\"/=Module["wasmPath"]/g' bet2.js
 
 echo "BET WASM fetched"

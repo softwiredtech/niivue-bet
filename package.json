@@ -3,9 +3,9 @@
     "private": true,
     "version": "0.0.0",
     "scripts": {
-      "dev": "source ./fetch_bet.sh && vite",
+      "dev": "./fetch_bet.sh && vite",
       "build": "./fetch_bet.sh && vite build",
-      "preview": "source ./fetch_bet.sh && vite preview",
+      "preview": "vite preview",
       "deploy": "npm run build && cp *.gz dist"
     },
     "devDependencies": {

@@ -1,5 +1,7 @@
 import { Niivue, NVImage } from '@niivue/niivue'
-import BetWorker from "./worker?worker";
+import BetWorker from "./worker?worker"
+import testNiiFile from './test_t1.nii?url'
+import bet2Wasm from "./bet2.wasm?url"
 
 
 let inputVolumeBuffer = null
@@ -10,10 +12,17 @@ let outputVolumeBuffers = {
     "skull": null
 }
 
+function fixWasmUrl(bet2WasmUrl) {
+    let idDoubleSlash = bet2WasmUrl.lastIndexOf("//");
+    let idLastSlash =  bet2WasmUrl.lastIndexOf("/");
+
+    return bet2WasmUrl.substring(0, idDoubleSlash) + "/" + bet2WasmUrl.substring(idLastSlash+1, bet2WasmUrl.length);
+}
+
 function processImage(worker, file) {
     let args = ["vol.nii", "out/vol_bet.nii"].concat(getCLIArgumentsFromModal());
     console.log(args);
-  worker.postMessage({files: [{name: "vol.nii", data: new Uint8Array(file)}], args: args});
+  worker.postMessage({files: [{name: "vol.nii", data: new Uint8Array(file)}], args: args, wasmPath: fixWasmUrl(bet2Wasm)});
 }
 
 function setVolume(nv, buffer) {
@@ -184,10 +193,10 @@ async function fetchFile(url) {
     });
 
     initBetWorker(nv, worker);
-    inputVolumeBuffer = await fetchFile("./test_t1.nii");
+    inputVolumeBuffer = await fetchFile(testNiiFile);
     nv.attachToCanvas(canvas);
     nv.loadVolumes([{
-        url: "./test_t1.nii",
+        url: testNiiFile,
         volume: {hdr: null, img: null},
         name: "test_image",
         colorMap: "gray",

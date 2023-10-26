@@ -4,12 +4,13 @@ Integration of the [WASM port](https://github.com/wpmed92/WebMRI) of FSL [BET](h
 
 ## Build
 
-This examples uses [Vite](https://vitejs.dev)
+This examples uses [Vite](https://vitejs.dev)<br>
 To run:
 `npm run dev`
 
 ## Usage
 
+Try the demo [here](https://softwiredtech.github.io/niivue-bet/)!<br>
 The demo loads a test nifti file. If you want to use your own file, click on "File selection".
 To invoke BET, click on "Options", tune the parameters to your liking, than click "Run".
 

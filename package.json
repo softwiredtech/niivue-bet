@@ -4,7 +4,7 @@
     "version": "0.0.0",
     "scripts": {
       "dev": "source ./fetch_bet.sh && vite",
-      "build": "source ./fetch_bet.sh && vite build",
+      "build": "./fetch_bet.sh && vite build",
       "preview": "source ./fetch_bet.sh && vite preview",
       "deploy": "npm run build && cp *.gz dist"
     },
